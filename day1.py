@@ -1,6 +1,3 @@
-from collections import defaultdict
-from collections import deque
-
 with open('input.txt') as file:
     strings = file.readlines()
 
@@ -46,7 +43,6 @@ for i in range(len(strings)):
             num += d
             break
 
-    print(c, " ", d, " ", num)
     out += num
 
 print(out)
