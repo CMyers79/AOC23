@@ -59,6 +59,7 @@ for _map in sorted_maps:
 done = False
 for range_pair in sorted_maps[0]:
     for source in range(range_pair[1][0], range_pair[1][1]):
+        location = range_pair[0][0] + source - range_pair[1][0]
         if not done:
             n = source
             for i in range(1, 7):
@@ -75,6 +76,7 @@ for range_pair in sorted_maps[0]:
             for s_range in seed_ranges:
                 if s_range[0] <= n < s_range[1]:
                     print(n)
+                    print(location)
                     done = True
                     break
         else:
