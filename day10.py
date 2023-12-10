@@ -1,5 +1,3 @@
-from collections import defaultdict
-from collections import deque
 
 with open('input.txt') as file:
     strings = file.readlines()
@@ -22,7 +20,8 @@ cur2 = start[0], start[1]
 cur3 = 0
 prev = cur
 prev2 = cur2
-loop = [start]
+loop = set(start)
+inside = set()
 
 # find two routes away from start
 
@@ -47,68 +46,127 @@ if start[1] + adj["right"][1] < len(g[0]) and g[start[0] + adj["right"][0]][star
 out += 1
 
 
-def next_pipe(cur, prev):
+def next_pipe(cur, prev, first):
     if prev == (cur[0] + 1, cur[1]):  # up
         if g[cur[0]][cur[1]] == "F":
+            if not first:
+                for tile in [(cur[0], cur[1] - 1), (cur[0] - 1, cur[1] - 1), (cur[0] - 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0], cur[1] + 1
         elif g[cur[0]][cur[1]] == "7":
+            if first:
+                for tile in [(cur[0], cur[1] + 1), (cur[0] - 1, cur[1] + 1), (cur[0] - 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0], cur[1] - 1
         else:
+            if first and (cur[0], cur[1] + 1) not in loop:
+                inside.add((cur[0], cur[1] + 1))
+            elif not first and (cur[0], cur[1] - 1) not in loop:
+                inside.add((cur[0], cur[1] - 1))
             prev = cur
             cur = cur[0] - 1, cur[1]
 
     elif prev == (cur[0] - 1, cur[1]):  # down
         if g[cur[0]][cur[1]] == "L":
+            if first:
+                for tile in [(cur[0], cur[1] - 1), (cur[0] + 1, cur[1] - 1), (cur[0] + 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0], cur[1] + 1
         elif g[cur[0]][cur[1]] == "J":
+            if not first:
+                for tile in [(cur[0], cur[1] + 1), (cur[0] + 1, cur[1] + 1), (cur[0] + 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0], cur[1] - 1
         else:
+            if first and (cur[0], cur[1] - 1) not in loop:
+                inside.add((cur[0], cur[1] - 1))
+            elif not first and (cur[0], cur[1] + 1) not in loop:
+                inside.add((cur[0], cur[1] + 1))
             prev = cur
             cur = cur[0] + 1, cur[1]
 
     elif prev == (cur[0], cur[1] - 1):  # right
         if g[cur[0]][cur[1]] == "7":
+            if not first:
+                for tile in [(cur[0], cur[1] + 1), (cur[0] - 1, cur[1] + 1), (cur[0] - 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0] + 1, cur[1]
         elif g[cur[0]][cur[1]] == "J":
+            if first:
+                for tile in [(cur[0], cur[1] + 1), (cur[0] + 1, cur[1] + 1), (cur[0] + 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0] - 1, cur[1]
         else:
+            if first and (cur[0] + 1, cur[1]) not in loop:
+                inside.add((cur[0] + 1, cur[1]))
+            elif not first and (cur[0] - 1, cur[1]) not in loop:
+                inside.add((cur[0] - 1, cur[1]))
             prev = cur
             cur = cur[0], cur[1] + 1
 
     elif prev == (cur[0], cur[1] + 1):  # left
         if g[cur[0]][cur[1]] == "F":
+            if first:
+                for tile in [(cur[0], cur[1] - 1), (cur[0] - 1, cur[1] - 1), (cur[0] - 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0] + 1, cur[1]
         elif g[cur[0]][cur[1]] == "L":
+            if not first:
+                for tile in [(cur[0], cur[1] - 1), (cur[0] + 1, cur[1] - 1), (cur[0] + 1, cur[1])]:
+                    if tile not in loop:
+                        inside.add(tile)
             prev = cur
             cur = cur[0] - 1, cur[1]
         else:
+            if first and (cur[0] - 1, cur[1]) not in loop:
+                inside.add((cur[0] - 1, cur[1]))
+            elif not first and (cur[0] + 1, cur[1]) not in loop:
+                inside.add((cur[0] + 1, cur[1]))
             prev = cur
             cur = cur[0], cur[1] - 1
 
+    if cur in inside:
+        inside.remove(cur)
     return cur, prev
 
 
 while cur != cur2:
-    loop.append(cur)
-    loop.append(cur2)
-    print(cur, " ", prev)
-    cur, prev = next_pipe(cur, prev)
-    cur2, prev2 = next_pipe(cur2, prev2)
+    loop.add(cur)
+    loop.add(cur2)
+    cur, prev = next_pipe(cur, prev, True)
+    cur2, prev2 = next_pipe(cur2, prev2, False)
     out += 1
 
-loop.append(cur)
+loop.add(cur)
 
-# count the tiles outside the loop
-outs = [(0, 0)]
+# inside may contain the tiles outside the loop if the first direction is counterclockwise
 
+fill = set()
+
+def in_search(c):
+    for pair in adj.values():
+        n = (c[0] + pair[0], c[1] + pair[1])
+        if n not in loop and n not in inside | fill and 0 <= n[0] < len(g) and 0 <= n[1] < len(g[0]):
+            fill.add(n)
+            in_search(n)
+
+
+for tile in inside:
+    in_search(tile)
 
 print(out)
-out2 = len(g) * len(g[0]) - (2 * out) - out2
-print(out2)
+print(len(inside | fill) - len(fill & loop) - len(inside & loop))
