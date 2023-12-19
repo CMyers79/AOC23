@@ -9,7 +9,5 @@ out2 = 0
 for i, s in enumerate(s_list):
 
 
-
-
 print(out)
 print(out2)
