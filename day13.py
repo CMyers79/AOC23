@@ -1,39 +1,52 @@
-from collections import defaultdict
-from collections import deque
-
 with open('input2.txt') as file:
     strings = file.readlines()
 s_list = [string.strip() for string in strings]
+s_list.append("")
 out = 0
-out2 = 0
 i = 0
-while i < len(s_list):
-    cur = []
-    found = False
-    while s_list[i] != "":
-        cur.append(s_list[i])
-        i += 1
-    for j in range(1, len(cur), 2):
-        if cur[0] == cur[j]:
-            match = True
-            for k in range(1, (j + 1) // 2):
-                if cur[k] != cur[j - k]:
-                    match = False
-            if match:
-                out += 100 * (j + 1) // 2
-                found = True
-                break
-    if not found:
-        for j in range(len(cur) - 2, -1, -2):
-            if cur[j] == cur[-1]:
-                match = True
-                for k in range(len(cur) - 2, j + (len(cur) - j) // 2, -1):
-                    if cur[k] != cur[k - j]:
-                        match = False
-
+j = 0
+while i < len(s_list) - 1:
     i += 1
+    if len(s_list[i]) == 0:
+        f = s_list[j:i]
+        found = False
+        # find horizontal reflection line
+        for k, line in enumerate(f):
+            for m in range(k + 1, len(f)):
+                if f[m] == line and (k == 0 or m == len(f) - 1):
+                    found = True
+                    for n in range(k + 1, m):
+                        if f[n] != f[m - n + k]:
+                            found = False
+                            break
+                    if found:
+                        out += 100 * (k + (m - k + 1) // 2)
+                        print(k, m, out)
+                        break
+            if found:
+                break
+        g = []
+        for k in range(len(f[0])):
+            g.append("".join([f[l][k] for l in range(len(f))]))
+        found = False
+        for k, line in enumerate(g):
+            for m in range(k + 1, len(g)):
+                if g[m] == line and (k == 0 or m == len(g) - 1):
+                    found = True
+                    for n in range(k + 1, m):
+                        if g[n] != g[m - n + k]:
+                            found = False
+                            break
+                    if found:
+                        out += k + (m - k + 1) // 2
+                        print(k, m, out)
+                        break
+            if found:
+                break
 
-
+        j = i + 1
+        print(out)
+        print(f)
+        print(g)
 
 print(out)
-print(out2)
